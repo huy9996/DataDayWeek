@@ -2,3 +2,4 @@ streamlit
 pandas
 vnstock3
 seaborn
+pytz
