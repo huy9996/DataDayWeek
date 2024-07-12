@@ -1,13 +1,15 @@
 import os
+
+if "ACCEPT_TC" not in os.environ:
+    os.environ["ACCEPT_TC"] = "tôi đồng ý"
+
 import streamlit as st
 import pandas as pd
 from vnstock3 import Vnstock
 from datetime import datetime, timedelta
-import pytz
 
 # Thiết lập môi trường cho Vnstock
-if "ACCEPT_TC" not in os.environ:
-    os.environ["ACCEPT_TC"] = "tôi đồng ý"
+
 
 # Danh sách các mã chứng khoán cần lấy dữ liệu
 stock_codes = ['AAA', 'ACB', 'AGG', 'AGR', 'ANV', 'ASM', 'BAF', 'BCG', 'BCM', 'BFC', 'BIC', 'BID', 'BMI', 'BMP', 'BSI', 'BVH', 'BVS', 'BWE', 'CCL', 'CEO', 'CII', 'CMG', 'CMX', 'CNG', 'CSC', 'CSM', 'CSV', 'CTD', 'CTG', 'CTI', 'CTR', 'CTS', 'D2D', 'DBC', 'DBD', 'DCL', 'DCM', 'DGC', 'DGW', 'DHC', 'DIG', 'DPG', 'DPM', 'DPR', 'DRC', 'DTD', 'DVM', 'DXG', 'DXP', 'EIB', 'ELC', 'EVE', 'EVF', 'FPT', 'FTS', 'GAS', 'GEG', 'GEX', 'GMD', 'GVR', 'HAH', 'HAX', 'HCM', 'HDB', 'HDC', 'HDG', 'HHS', 'HHV', 'HPG', 'HSG', 'HTN', 'HVH', 'IDC', 'IDI', 'IJC', 'ITC', 'KBC', 'KDC', 'KDH', 'KHG', 'KSB', 'LAS', 'LCG', 'LHG', 'LPB', 'LSS', 'MBB', 'MBS', 'MIG', 'MSB', 'MSH', 'MSN', 'MWG', 'NAF', 'NBC', 'NHA', 'NKG', 'NLG', 'NT2', 'NTL', 'NTP', 'NVL', 'OCB', 'ORS', 'PAN', 'PC1', 'PDR', 'PET', 'PHR', 'PLX', 'PNJ', 'POW', 'PVB', 'PVC', 'PVD', 'PVI', 'PVS', 'PVT', 'REE', 'S99', 'SAB', 'SAM', 'SBT', 'SCR', 'SFG', 'SHB', 'SHI', 'SHS', 'SKG', 'SSB', 'SSI', 'STB', 'STK', 'SZC', 'TCB', 'TCD', 'TCH', 'TCM', 'TIG', 'TIP', 'TLG', 'TLH', 'TNG', 'TNH', 'TPB', 'TTA', 'TV2', 'VCB', 'VCG', 'VCI', 'VCS', 'VDS', 'VGC', 'VGS', 'VHC', 'VHM', 'VIB', 'VIC', 'VIP', 'VIX', 'VJC', 'VNM', 'VPB', 'VPG', 'VPI', 'VRE', 'VSC', 'VTO'
@@ -24,15 +26,12 @@ def get_data(symbol, start_date, end_date):
 st.title('Ứng dụng theo dõi dữ liệu lịch sử')
 st.write('Ứng dụng này thu thập và hiển thị dữ liệu lịch sử theo mã.')
 
-# Thiết lập múi giờ Việt Nam (GMT+7)
-vn_tz = pytz.timezone('Asia/Ho_Chi_Minh')
-
 # Tính toán ngày mặc định cho start_date (ngày hiện tại trừ đi 1 ngày)
-default_start_date = datetime.now(vn_tz) - timedelta(days=1)
+default_start_date = datetime.now() - timedelta(days=1)
 default_start_date_str = default_start_date.strftime('%Y-%m-%d')
 
 # Widget để chọn ngày bắt đầu và kết thúc
-start_date = st.date_input("Chọn ngày bắt đầu", value=default_start_date.date())
+start_date = st.date_input("Chọn ngày bắt đầu", value=default_start_date)
 end_date = st.date_input("Chọn ngày kết thúc", pd.Timestamp('today').date())
 
 # Chuyển định dạng ngày sang chuỗi "yyyy-mm-dd"
@@ -53,7 +52,7 @@ if st.button('Tra cứu'):
     count = 0
 
     # Bắt đầu tính thời gian khi bắt đầu lặp
-    start_time = datetime.now(vn_tz)
+    start_time = datetime.now()
 
     # Lặp qua từng mã và lấy dữ liệu
     for code in stock_codes:
@@ -72,7 +71,7 @@ if st.button('Tra cứu'):
         status_text.text(f"Đang xử lý {count}/{total_codes} - {progress_percent}% hoàn thành.")
 
     # Kết thúc tính thời gian khi hoàn thành lặp
-    end_time = datetime.now(vn_tz)
+    end_time = datetime.now()
 
     # Tính toán số giây thực thi
     time_elapsed = (end_time - start_time).total_seconds()
