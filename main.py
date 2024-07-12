@@ -11,16 +11,16 @@ if "ACCEPT_TC" not in os.environ:
 # Danh sách các mã chứng khoán cần lấy dữ liệu
 stock_codes = ['MBB', 'MBS', 'VPB', 'TCB', 'IDI']
 
-# Hàm để lấy dữ liệu lịch sử giá cổ phiếu
-def get_stock_data(symbol, start_date, end_date):
+# Hàm để lấy dữ liệu lịch sử
+def get_data(symbol, start_date, end_date):
     stock = Vnstock().stock(symbol=symbol, source='VCI')
     df = stock.quote.history(start=start_date, end=end_date, interval='1D')
-    df['Stock Code'] = symbol  # Thêm cột mã chứng khoán vào DataFrame
+    df['Code'] = symbol  # Thêm cột mã vào DataFrame
     return df
 
 # Tạo giao diện Streamlit
-st.title('Dữ liệu lịch sử giá cổ phiếu')
-st.write('Dữ liệu được lấy và hiển thị dưới đây:')
+st.title('Ứng dụng theo dõi dữ liệu lịch sử')
+st.write('Ứng dụng này thu thập và hiển thị dữ liệu lịch sử theo mã.')
 
 # Tính toán ngày mặc định cho start_date (ngày hiện tại trừ đi 1 ngày)
 default_start_date = datetime.now() - timedelta(days=1)
@@ -36,27 +36,27 @@ end_date_str = end_date.strftime('%Y-%m-%d')
 
 # Button để chạy chương trình
 if st.button('Tra cứu'):
-    # Tạo DataFrame để lưu trữ dữ liệu từ các mã chứng khoán
+    # Tạo DataFrame để lưu trữ dữ liệu từ các mã
     combined_df = pd.DataFrame()
 
     # Tạo thanh progress bar và text để hiển thị tiến độ
     progress_bar = st.progress(0)
     status_text = st.empty()
 
-    # Tính tổng số mã chứng khoán
+    # Tính tổng số mã
     total_codes = len(stock_codes)
     count = 0
 
     # Bắt đầu tính thời gian khi bắt đầu lặp
     start_time = datetime.now()
 
-    # Lặp qua từng mã chứng khoán và lấy dữ liệu
+    # Lặp qua từng mã và lấy dữ liệu
     for code in stock_codes:
         try:
-            stock_data = get_stock_data(code, start_date_str, end_date_str)
-            stock_data.reset_index(drop=True, inplace=True)  # Đặt lại index và loại bỏ cột index
-            stock_data = stock_data[['Stock Code'] + [col for col in stock_data.columns if col != 'Stock Code']]  # Di chuyển cột 'Stock Code' lên đầu
-            combined_df = pd.concat([combined_df, stock_data], ignore_index=True)
+            data = get_data(code, start_date_str, end_date_str)
+            data.reset_index(drop=True, inplace=True)  # Đặt lại index và loại bỏ cột index
+            data = data[['Code'] + [col for col in data.columns if col != 'Code']]  # Di chuyển cột 'Code' lên đầu
+            combined_df = pd.concat([combined_df, data], ignore_index=True)
         except Exception as e:
             st.error(f"Không thể lấy dữ liệu cho mã {code}. Lỗi: {e}")
 
@@ -64,7 +64,7 @@ if st.button('Tra cứu'):
         count += 1
         progress_percent = int(count / total_codes * 100)
         progress_bar.progress(progress_percent)
-        status_text.text(f"Đang chạy mã {count}/{total_codes} - {progress_percent}% hoàn thành.")
+        status_text.text(f"Đang xử lý {count}/{total_codes} - {progress_percent}% hoàn thành.")
 
     # Kết thúc tính thời gian khi hoàn thành lặp
     end_time = datetime.now()
@@ -78,4 +78,4 @@ if st.button('Tra cứu'):
 
     # Hiển thị bảng dữ liệu tổng hợp trên giao diện
     st.subheader('Bảng dữ liệu tổng hợp:')
-    st.write(combined_df, index=False)  # Không hiển thị cột index và không cần nút tải CSV
+    st.write(combined_df, index=False)  # Không hiển thị cột index
